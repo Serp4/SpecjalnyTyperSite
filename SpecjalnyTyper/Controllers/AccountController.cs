@@ -37,6 +37,7 @@ namespace SpecjalnyTyper.Controllers
             }
             else
             {
+                ModelState.AddModelError("", "Nieprawidłowy login lub hasło.");
                 return View();
             }
         }
@@ -50,8 +51,32 @@ namespace SpecjalnyTyper.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
-            MembershipCreateStatus info;
-            Membership.CreateUser(model.Login, model.ConfirmPassword, model.Email, "admin", "admin", false, out info);
+            MembershipCreateStatus status_reg;
+            Membership.CreateUser(model.Login, model.ConfirmPassword, model.Email, "admin", "admin", false, out status_reg);
+            if (MembershipCreateStatus.Success == status_reg)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            else if(MembershipCreateStatus.InvalidPassword == status_reg)
+            {
+                ModelState.AddModelError("", "Błędny format hasła.");
+            }
+            else if(MembershipCreateStatus.InvalidUserName==status_reg)
+            {
+                ModelState.AddModelError("", "Niepoprawny Login");
+            }
+            else if (MembershipCreateStatus.InvalidEmail == status_reg)
+            {
+                ModelState.AddModelError("", "Niepoprawny Email");
+            }
+            else if (MembershipCreateStatus.DuplicateUserName == status_reg)
+            {
+                ModelState.AddModelError("", "Użytkownik o danym loginie już istnieje");
+            }
+            else if (MembershipCreateStatus.DuplicateEmail == status_reg)
+            {
+                ModelState.AddModelError("", "Użytkownik o danym email'u już istnieje");
+            }
             return View(model);
         }
 
